@@ -98,3 +98,12 @@ _ = model.generate(
     temperature = 1.0, top_p = 0.95, top_k = 64,
     streamer = TextStreamer(tokenizer, skip_prompt = True),
 )
+
+model.push_to_hub_merged(
+    "thermostatic/neuraltranslate-nahuatl-v0.0.1", tokenizer
+)
+
+model.save_pretrained_gguf(
+    "thermostatic/neuraltranslate-nahuatl-v0.0.1-GGUF",
+    quantization_type = "Q8_0",
+)
