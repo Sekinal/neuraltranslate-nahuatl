@@ -80,11 +80,11 @@ trainer = SFTTrainer(
     eval_dataset = validation_dataset, # Pass the validation set
     args = SFTConfig(
         dataset_text_field = "text",
-        per_device_train_batch_size = 256,
-        gradient_accumulation_steps = 4, # Use GA to mimic batch size!
+        per_device_train_batch_size = 16,
+        gradient_accumulation_steps = 1, # Use GA to mimic batch size!
         warmup_ratio = 0.1,
-        num_train_epochs = 2, # Set this for 1 full training run.
-        learning_rate = 2e-4, # Reduce to 2e-5 for long training runs
+        num_train_epochs = 3, # Set this for 1 full training run.
+        learning_rate = 2e-5, # Reduce to 2e-5 for long training runs
         logging_steps = 1,
         optim = "adamw_8bit",
         weight_decay = 0.01,
@@ -94,8 +94,7 @@ trainer = SFTTrainer(
         dataset_num_proc=4,  # Use more processes for mapping
 
         # New arguments for validation and saving
-        eval_strategy="steps",
-        eval_steps = 5,       # Evaluate at the end of each epoch
+        eval_strategy="epoch",
         save_strategy = "epoch",             # Save a checkpoint at the end of each epoch
     ),
 )
