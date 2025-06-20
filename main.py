@@ -31,7 +31,7 @@ tokenizer = get_chat_template(
 )
 
 from datasets import load_dataset
-dataset = load_dataset("Thermostatic/ShareGPT-Nahuatl-Spanish", split="train")
+dataset = load_dataset("Thermostatic/Axolotl-Spanish-Nahuatl-ShareGPT-Filtered", split="train")
 
 from unsloth.chat_templates import standardize_data_formats
 dataset = standardize_data_formats(dataset)
@@ -51,10 +51,10 @@ trainer = SFTTrainer(
     eval_dataset = None, # Can set up evaluation!
     args = SFTConfig(
         dataset_text_field = "text",
-        per_device_train_batch_size = 64,
+        per_device_train_batch_size = 256,
         gradient_accumulation_steps = 4, # Use GA to mimic batch size!
         warmup_ratio = 0.1,
-        num_train_epochs = 1, # Set this for 1 full training run.
+        num_train_epochs = 2, # Set this for 1 full training run.
         learning_rate = 2e-4, # Reduce to 2e-5 for long training runs
         logging_steps = 1,
         optim = "adamw_8bit",
@@ -100,10 +100,10 @@ _ = model.generate(
 )
 
 model.push_to_hub_merged(
-    "thermostatic/neuraltranslate-nahuatl-v0.0.1", tokenizer
+    "Thermostatic/neuraltranslate-nahuatl-v0.0.1", tokenizer
 )
 
 model.save_pretrained_gguf(
-    "thermostatic/neuraltranslate-nahuatl-v0.0.1-GGUF",
+    "Thermostatic/neuraltranslate-nahuatl-v0.0.1-GGUF",
     quantization_type = "Q8_0",
 )
