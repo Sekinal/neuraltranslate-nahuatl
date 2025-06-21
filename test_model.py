@@ -1,6 +1,6 @@
 from unsloth import FastModel
 model, tokenizer = FastModel.from_pretrained(
-    model_name = "trainer_output/checkpoint-2415",
+    model_name = "trainer_output/checkpoint-1932",
     max_seq_length = 256,
     load_in_4bit = True,
 )
