@@ -192,18 +192,3 @@ _ = model.generate(
     temperature = 1.0, top_p = 0.95, top_k = 64,
     streamer = TextStreamer(tokenizer, skip_prompt = True),
 )
-
-# Save the final, best-performing model
-print("\nSaving and uploading model to Hugging Face Hub...")
-model.push_to_hub_merged(
-    "Thermostatic/neuraltranslate-nahuatl-v0.0.1", tokenizer,
-    # Add your Hugging Face username if needed, e.g., "my_username/my_model_name"
-)
-
-model.push_to_hub_gguf(
-    "neuraltranslate-nahuatl-v0.0.1",
-    quantization_type = "Q8_0", # Only Q8_0, BF16, F16 supported
-    repo_id = "Thermostatic/neuraltranslate-nahuatl-v0.0.1-GGUF"
-)
-
-print("\nScript finished successfully!")
