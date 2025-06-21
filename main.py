@@ -3,7 +3,7 @@ import torch
 
 model, tokenizer = FastModel.from_pretrained(
     model_name = "unsloth/gemma-3-4b-it",
-    max_seq_length = 2048, # Choose any for long context!
+    max_seq_length = 256, # Choose any for long context!
     load_in_4bit = True,  # 4 bit quantization to reduce memory
     load_in_8bit = False, # [NEW!] A bit more accurate, uses 2x memory
     full_finetuning = False, # [NEW!] We have full finetuning now!
@@ -17,8 +17,8 @@ model = FastModel.get_peft_model(
     finetune_attention_modules = True,  # Attention good for GRPO
     finetune_mlp_modules       = True,  # SHould leave on always!
 
-    r = 8,           # Larger = higher accuracy, but might overfit
-    lora_alpha = 8,  # Recommended alpha == r at least
+    r = 64,           # Larger = higher accuracy, but might overfit
+    lora_alpha = 64,  # Recommended alpha == r at least
     lora_dropout = 0,
     bias = "none",
     random_state = 3407,
@@ -64,12 +64,63 @@ def formatting_prompts_func(examples):
    return { "text" : texts, }
 
 # Apply formatting to all splits
-train_dataset = train_dataset.map(formatting_prompts_func, batched = True)
-validation_dataset = validation_dataset.map(formatting_prompts_func, batched = True)
-test_dataset = test_dataset.map(formatting_prompts_func, batched = True)
+train_dataset = train_dataset.map(
+    formatting_prompts_func, 
+    batched = True
+    )
+validation_dataset = validation_dataset.map(
+    formatting_prompts_func, 
+    batched = True
+    )
+test_dataset = test_dataset.map(
+    formatting_prompts_func, 
+    batched = True
+    )
 
+from evaluate import load
+import numpy as np # Make sure to import numpy
 
-### MODIFICATION ###
+# Load the metric. chrF is a great choice here.
+chrf_metric = load("chrf")
+
+def preprocess_logits_for_metrics(logits, labels):
+    """
+    This function is called by the Trainer before computing metrics.
+    It takes the raw logits and converts them to the predicted token IDs.
+    This is memory-efficient as it avoids storing all logits.
+    """
+    # The logits are often a tuple, so we take the first element.
+    if isinstance(logits, tuple):
+        logits = logits[0]
+        
+    # Get the predicted token IDs by taking the argmax along the last dimension.
+    pred_ids = torch.argmax(logits, dim=-1)
+    return pred_ids
+
+def compute_metrics(eval_pred):
+    pred_ids, label_ids = eval_pred
+
+    # **THE FIX IS HERE**
+    # Mask the predictions where the label is -100.
+    # This prevents the tokenizer from trying to decode irrelevant tokens
+    # predicted for the prompt or padding.
+    pred_ids = np.where(label_ids != -100, pred_ids, tokenizer.pad_token_id)
+    
+    # Also clean up the labels as before.
+    label_ids = np.where(label_ids != -100, label_ids, tokenizer.pad_token_id)
+
+    # Decode predictions and labels.
+    decoded_preds = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+    decoded_labels = tokenizer.batch_decode(label_ids, skip_special_tokens=True)
+
+    # The `chrf` metric expects a list of predictions and a list of lists of references.
+    decoded_labels_nested = [[label] for label in decoded_labels]
+
+    # Compute the metric
+    result = chrf_metric.compute(predictions=decoded_preds, references=decoded_labels_nested)
+
+    return {"chrf": result["score"]}
+
 # 3. Configure the trainer to use the validation set and report metrics
 from trl import SFTTrainer, SFTConfig
 
@@ -77,13 +128,15 @@ trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
     train_dataset = train_dataset,
-    eval_dataset = validation_dataset, # Pass the validation set
+    eval_dataset = validation_dataset,
+    compute_metrics=compute_metrics,
+    preprocess_logits_for_metrics = preprocess_logits_for_metrics,
     args = SFTConfig(
         dataset_text_field = "text",
         per_device_train_batch_size = 16,
         gradient_accumulation_steps = 2, # Use GA to mimic batch size!
         warmup_ratio = 0.1,
-        num_train_epochs = 3, # Set this for 1 full training run.
+        num_train_epochs = 10, # Set this for 1 full training run.
         learning_rate = 2e-5, # Reduce to 2e-5 for long training runs
         logging_steps = 1,
         optim = "adamw_8bit",
@@ -92,10 +145,13 @@ trainer = SFTTrainer(
         seed = 3407,
         report_to = "wandb", # Use this for WandB etc
         dataset_num_proc=4,  # Use more processes for mapping
-
+        prediction_loss_only=False,
         # New arguments for validation and saving
         eval_strategy="epoch",
         save_strategy = "epoch",             # Save a checkpoint at the end of each epoch
+        load_best_model_at_end=True,     # 4. Enable loading the best model
+        metric_for_best_model="chrf",    # 5. Tell it WHICH metric defines "best"
+        greater_is_better=True,  
     ),
 )
 
@@ -109,15 +165,6 @@ trainer = train_on_responses_only(
 # Start training. Validation loss will be calculated and reported to W&B automatically.
 print("Starting training...")
 trainer_stats = trainer.train()
-
-### MODIFICATION ###
-# 4. Evaluate the final model on the unseen test set
-print("\nEvaluating the final model on the test set...")
-test_results = trainer.evaluate(test_dataset)
-print("Test set evaluation results:")
-print(test_results)
-
-# The test results are also automatically logged to WandB
 
 # --- The rest of the script for inference and saving remains the same ---
 
@@ -153,9 +200,10 @@ model.push_to_hub_merged(
     # Add your Hugging Face username if needed, e.g., "my_username/my_model_name"
 )
 
-model.save_pretrained_gguf(
-    "Thermostatic/neuraltranslate-nahuatl-v0.0.1-GGUF",
-    quantization_type = "Q8_0",
+model.push_to_hub_gguf(
+    "neuraltranslate-nahuatl-v0.0.1",
+    quantization_type = "Q8_0", # Only Q8_0, BF16, F16 supported
+    repo_id = "Thermostatic/neuraltranslate-nahuatl-v0.0.1-GGUF"
 )
 
 print("\nScript finished successfully!")

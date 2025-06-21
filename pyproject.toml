@@ -5,9 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "accelerate<1.8.0",
     "datasets>=3.6.0",
-    "unsloth>=2025.6.2",
     "wandb>=0.20.1",
     "transformers<=4.51.3",
+    "unsloth>=2025.6.2",
+    "matplotlib>=3.10.3",
+    "polars>=1.31.0",
+    "evaluate>=0.4.4",
+    "sacrebleu>=2.5.1",
 ]
