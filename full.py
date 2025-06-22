@@ -2,7 +2,7 @@ from unsloth import FastModel
 import torch
 
 model, tokenizer = FastModel.from_pretrained(
-    model_name = "unsloth/gemma-3-1b-it-unsloth-bnb-4bit",
+    model_name = "unsloth/gemma-3-27b-it-unsloth-bnb-4bit",
     max_seq_length = 256, # Choose any for long context!
     load_in_4bit = True,  # 4 bit quantization to reduce memory
     load_in_8bit = False, # [NEW!] A bit more accurate, uses 2x memory
@@ -102,8 +102,8 @@ trainer = SFTTrainer(
     preprocess_logits_for_metrics = preprocess_logits_for_metrics,
     args = SFTConfig(
         dataset_text_field = "text",
-        per_device_train_batch_size = 8,
-        gradient_accumulation_steps = 4, # Use GA to mimic batch size!
+        per_device_train_batch_size = 16,
+        gradient_accumulation_steps = 2, # Use GA to mimic batch size!
         warmup_ratio = 0.1,
         num_train_epochs = 10, # Set this for 1 full training run.
         learning_rate = 2e-5, # Reduce to 2e-5 for long training runs
