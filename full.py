@@ -18,31 +18,18 @@ tokenizer = get_chat_template(
 
 from datasets import load_dataset
 # Load the full dataset
-full_dataset = load_dataset("Thermostatic/Axolotl-Spanish-Nahuatl-ShareGPT-Filtered", split="train")
-
-# First, split off the test set (10% of the total data)
-train_val_split = full_dataset.train_test_split(test_size=0.1, seed=42)
-test_dataset = train_val_split['test']
-
-# Next, split the remaining 90% into training (80%) and validation (10%)
-# To get 10% of the original dataset for validation from the remaining 90%,
-# we need to take 1/9th of it (0.1 / 0.9 = 1/9)
-final_split = train_val_split['train'].train_test_split(test_size=(1/9), seed=42)
-train_dataset = final_split['train']
-validation_dataset = final_split['test']
+train_dataset = load_dataset("Thermostatic/Axolotl-Spanish-Nahuatl-ShareGPT-Filtered-Splits", split="train")
+validation_dataset = load_dataset("Thermostatic/Axolotl-Spanish-Nahuatl-ShareGPT-Filtered-Splits", split="train")
 
 print(f"Dataset splits:")
 print(f"  Train: {len(train_dataset)} examples")
 print(f"  Validation: {len(validation_dataset)} examples")
-print(f"  Test: {len(test_dataset)} examples")
 
-### MODIFICATION ###
 # 2. Standardize and format all three dataset splits
 from unsloth.chat_templates import standardize_data_formats
 
 train_dataset = standardize_data_formats(train_dataset)
 validation_dataset = standardize_data_formats(validation_dataset)
-test_dataset = standardize_data_formats(test_dataset)
 
 def formatting_prompts_func(examples):
    convos = examples["conversations"]
@@ -55,10 +42,6 @@ train_dataset = train_dataset.map(
     batched = True
     )
 validation_dataset = validation_dataset.map(
-    formatting_prompts_func, 
-    batched = True
-    )
-test_dataset = test_dataset.map(
     formatting_prompts_func, 
     batched = True
     )
