@@ -45,7 +45,6 @@ from unsloth.chat_templates import standardize_data_formats
 
 train_dataset = standardize_data_formats(train_dataset)
 validation_dataset = standardize_data_formats(validation_dataset)
-test_dataset = standardize_data_formats(test_dataset)
 
 def formatting_prompts_func(examples):
    convos = examples["conversations"]
