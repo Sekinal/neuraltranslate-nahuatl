@@ -1,38 +1,38 @@
 from unsloth import FastModel
 model, tokenizer = FastModel.from_pretrained(
-    model_name = "trainer_output/checkpoint-1932",
+    model_name = "Thermostatic/neuraltranslate-27b-mt-es-nah-v1.1",
     max_seq_length = 256,
-    load_in_4bit = True,
+    load_in_4bit = False,
 )
 
 messages_1 = [{
     "role": "user",
-    "content": [{"type" : "text", "text" : "Traduce al español: Auh in ye yuhqui in on tlenamacac niman ye ic teixpan on motlalia ce tlacatl itech mocaua.",}]
+    "content": [{"type" : "text", "text" : "Pero on inomachtijcahuan xcajsicamatiyaj tlinon quimijliaya niman nomojtiayaj para quitlajtojlisquej ma quinmelajcaijli on tlen quimijlijticatca.",}]
 }]
 
 messages_2 = [{
     "role": "user",
-    "content": [{"type" : "text", "text" : "Traduce al español: ¿In chalchihuitl, teocuitlatl, mach ah ca on yaz?",}]
+    "content": [{"type" : "text", "text" : "On miyec tlajyohuilistli yejhuan huajlau ipan Cristo, no topan huajlau.No ijqui itechcopa Cristo ticseliaj se hueyi teyoltlalijli.",}]
 }]
 
 messages_3 = [{
     "role": "user",
-    "content": [{"type" : "text", "text" : "Traduce al español: Auh yn oyuh in yoca hualmotlalli tonatiuh ylhuicatitech, niman yc peuh yn huel ye tlacoçahuia, çan ihuiantzin ye tlayohuatiuh ynic ye poliuhtiuh tonatiuh, ynic huel ixpan || 147 ye yatiuh ynic huel ixpan ye onmomana metztli, huel cacitimoman ynic yahualtic tonatiuh ynic quixtzacuilli, y çan ihuiantzin huel onpolihuico tonatiuh.",}]
+    "content": [{"type" : "text", "text" : "AUH INIC TLENAMACOYA",}]
 }]
 
 messages_4 = [{
     "role": "user",
-    "content": [{"type" : "text", "text" : "Auh in ye yuhqui in on tlenamacac niman ye ic teixpan on motlalia ce tlacatl itech mocaua.",}]
+    "content": [{"type" : "text", "text" : "pampa ijcuac ajsis on hora ica nentlajtosquej, on Espíritu Santo yejhua mechijlis tlinon nenquijtosquej.",}]
 }]
 
 messages_5 = [{
     "role": "user",
-    "content": [{"type" : "text", "text" : "¿In chalchihuitl, teocuitlatl, mach ah ca on yaz?",}]
+    "content": [{"type" : "text", "text" : "Dios ica iteicnelilis onechcalaquij quen nitlayecanquetl tepanchijchiquetl.Onictlalij on cimiento campa notlalis se cajli, niman ocse tlacatl oquetzteu on tepantli ipan on cimiento.Pero cada se ma nota sa no yejhua quen ijqui cuajli quetztehuas on tepantli.",}]
 }]
 
 messages_6 = [{
     "role": "user",
-    "content": [{"type" : "text", "text" : "Auh yn oyuh in yoca hualmotlalli tonatiuh ylhuicatitech, niman yc peuh yn huel ye tlacoçahuia, çan ihuiantzin ye tlayohuatiuh ynic ye poliuhtiuh tonatiuh, ynic huel ixpan || 147 ye yatiuh ynic huel ixpan ye onmomana metztli, huel cacitimoman ynic yahualtic tonatiuh ynic quixtzacuilli, y çan ihuiantzin huel onpolihuico tonatiuh.",}]
+    "content": [{"type" : "text", "text" : "Yn isquichti cuicoanoaya muchinti tlatlataque unca mique; yn techpeualti ye techmictia yey hora, yn ountemictique teutualco.",}]
 }]
 
 messages_list = [messages_1, messages_2, messages_3, messages_4, messages_5, messages_6]
